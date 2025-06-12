@@ -13,12 +13,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Leer los tres archivos Excel al iniciar
+# Función para cargar Excel ignorando la primera fila y usando la segunda como encabezado
 def cargar_excel(ruta):
-    df = pd.read_excel(ruta)
-    df.fillna("", inplace=True)
+    df = pd.read_excel(ruta, header=1)  # Usa la fila 2 como encabezado
+    df = df.dropna(how="all")           # Elimina filas completamente vacías
+    df.fillna("", inplace=True)         # Reemplaza NaN con string vacío
     return df.to_dict(orient="records")
 
+# Cargar los tres archivos con header en la segunda fila
 data1 = cargar_excel("base_de_datos_tutor.xlsx")
 data2 = cargar_excel("base_datos_tutorados.xlsx")
 data3 = cargar_excel("base_datos_tutor_anterior.xlsx")
@@ -41,6 +43,7 @@ def get_items2():
 def get_items3():
     return data3
 
+# Endpoints individuales por ID
 @app.get("/items1/{item_id}")
 def get_item1(item_id: int):
     if item_id < 0 or item_id >= len(data1):
